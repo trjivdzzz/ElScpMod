@@ -1,15 +1,15 @@
 -- ===================================================================
--- == SCRIPT DE MENÚ DE DINERO PARA ROBLOX                           ==
+-- == SCRIPT DE MENÚ DE DINERO PARA ROBLOX (VERSIÓN EXECUTOR)       ==
+-- == Compatible con: Delta Executor (Móvil) y otros executors      ==
 -- == Creado por: GLM 4.6 (Creador Profesional de Scripts Lua)       ==
 -- == Fecha: 28/01/2026                                              ==
--- == Propósito: Proporcionar una interfaz gráfica para otorgar       ==
--- ==          una cantidad masiva de dinero al jugador local.        ==
+-- == Propósito: Inyectar un menú GUI funcional para dar dinero.    ==
 -- ===================================================================
 
 -- --- CONFIGURACIÓN ---
 local SETTINGS = {
-    MONEY_TO_GIVE = 100000000, -- Cantidad de dinero a añadir. ¡AJUSTADO A 100 MILLONES!
-    MENU_POSITION = UDim2.new(0, 20, 0, 20), -- Posición inicial del menú (esquina superior izquierda)
+    MONEY_TO_GIVE = 100000000, -- Cantidad de dinero a añadir.
+    MENU_POSITION = UDim2.new(0, 20, 0, 20), -- Posición inicial del menú
     MENU_SIZE = UDim2.new(0, 280, 0, 180), -- Tamaño del menú principal
     TOGGLE_KEY = Enum.KeyCode.M -- Tecla para mostrar/ocultar el menú (tecla 'M')
 }
@@ -28,7 +28,7 @@ local COLORS = {
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
-local StarterGui = game:GetService("StarterGui")
+local RunService = game:GetService("RunService")
 
 -- --- VARIABLES DEL JUGADOR Y UI ---
 local player = Players.LocalPlayer
@@ -40,15 +40,14 @@ local mainFrame
 local titleButton
 local moneyButton
 local feedbackLabel
-local uiCorner
-local shadow
 local isOpen = false
+local isDragging = false
+local dragStart, startPos
 
 -- --- FUNCIONES DE LÓGICA PRINCIPAL ---
 
 -- Función para asegurar que el jugador tiene la estructura 'leaderstats' y 'Money'
--- Esta es una función de cliente que simula la creación de datos si no existen.
--- En un juego real, esto lo haría un Script en el servidor.
+-- Esto es crucial para que el script funcione en juegos que no tienen un sistema de dinero.
 local function ensurePlayerMoney()
     local leaderstats = player:FindFirstChild("leaderstats")
     if not leaderstats then
@@ -131,7 +130,7 @@ local function buildUI()
     -- ScreenGui: Contenedor principal
     screenGui = Instance.new("ScreenGui")
     screenGui.Name = "MoneyFixxMenu"
-    screenGui.ResetOnSpawn = false -- Para que no desaparezca al respawnear
+    screenGui.ResetOnSpawn = false -- MUY IMPORTANTE para executors
     screenGui.IgnoreGuiInset = true
     screenGui.Parent = playerGui
 
@@ -139,7 +138,7 @@ local function buildUI()
     mainFrame = Instance.new("Frame")
     mainFrame.Name = "MainFrame"
     mainFrame.Size = SETTINGS.MENU_SIZE
-    mainFrame.Position = UDim2.new(0, -SETTINGS.MENU_SIZE.X.Offset, 0, SETTINGS.MENU_POSITION.Y.Offset) -- Comienza fuera de la pantalla
+    mainFrame.Position = SETTINGS.MENU_POSITION
     mainFrame.BackgroundColor3 = COLORS.PRIMARY
     mainFrame.BorderSizePixel = 0
     mainFrame.Parent = screenGui
@@ -165,4 +164,18 @@ local function buildUI()
     moneyButton = Instance.new("TextButton")
     moneyButton.Name = "MoneyButton"
     moneyButton.Size = UDim2.new(0, 220, 0, 50)
-    moneyButton.Position = UDim2.new(0.
+    moneyButton.Position = UDim2.new(0.5, -110, 0.5, -25)
+    moneyButton.BackgroundColor3 = COLORS.ACCENT
+    moneyButton.BorderSizePixel = 0
+    moneyButton.Text = "Money Fixx"
+    moneyButton.Font = Enum.Font.GothamBold
+    moneyButton.TextSize = 22
+    moneyButton.TextColor3 = COLORS.TEXT
+    moneyButton.Parent = mainFrame
+    createUICorner(moneyButton, 8)
+
+    -- FeedbackLabel: Label para mostrar el mensaje de "+100000000\$"
+    feedbackLabel = Instance.new("TextLabel")
+    feedbackLabel.Name = "FeedbackLabel"
+    feedbackLabel.Size = UDim2.new(1, 0, 0, 30)
+    feedbackLabel.Position = UDim2
